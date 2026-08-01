@@ -1,0 +1,19 @@
+# Backend
+fastapi
+uvicorn
+pandas
+openpyxl
+groq
+langgraph
+langchain-groq
+chromadb
+python-multipart
+python-dotenv
+chromadb
+# Frontend
+streamlit
+requests
+
+# Notebooks
+jupyter
+nbformat
