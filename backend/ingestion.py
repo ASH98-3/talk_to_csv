@@ -19,25 +19,54 @@ def load_file(file_path: str, db_path: str, table_name: str = "data") -> str:
 
 
 def get_schema(db_path: str, table_name: str) -> str:
-    """Return a plain-text schema description for the LLM prompt."""
-    conn = sqlite3.connect(db_path)
-    cols = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
-    sample = conn.execute(f"SELECT * FROM {table_name} LIMIT 3").fetchall()
+    """
+    Plain-text schema for LLM prompt.
+    Fetches 50 rows so sparse columns (like salary) still get sample values.
+    """
+    conn    = sqlite3.connect(db_path)
+    cols    = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    samples = conn.execute(f"SELECT * FROM {table_name} LIMIT 50").fetchall()
     conn.close()
 
-    col_lines = [f"  - {c[1]} ({c[2]})" for c in cols]
-    sample_lines = [str(row) for row in sample]
+    col_lines = []
+    for i, c in enumerate(cols):
+        col_name  = c[1]
+        col_type  = c[2]
+        vals      = [str(row[i]) for row in samples if row[i] is not None][:3]
+        sample_str = ", ".join(vals) if vals else "no samples"
+        col_lines.append(f"  - {col_name} ({col_type}) e.g. {sample_str}")
 
     return (
         f"Table: {table_name}\n"
-        f"Columns:\n" + "\n".join(col_lines) + "\n"
-        f"Sample rows:\n" + "\n".join(sample_lines)
+        f"Columns:\n" + "\n".join(col_lines)
     )
+
+
+def get_column_documents(db_path: str, table_name: str) -> list:
+    """
+    Build one text document per column for RAG embedding.
+    Used by schema_store.py to populate ChromaDB.
+    """
+    conn    = sqlite3.connect(db_path)
+    cols    = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
+    samples = conn.execute(f"SELECT * FROM {table_name} LIMIT 50").fetchall()
+    conn.close()
+
+    documents = []
+    for i, c in enumerate(cols):
+        col_name   = c[1]
+        col_type   = c[2]
+        vals       = [str(row[i]) for row in samples if row[i] is not None][:3]
+        sample_str = ", ".join(vals) if vals else "no samples"
+        documents.append(
+            f"Table: {table_name} | Column: {col_name} | Type: {col_type} | Sample values: {sample_str}"
+        )
+    return documents
 
 
 def get_dataframe(db_path: str, table_name: str) -> pd.DataFrame:
     """Load the full table as a DataFrame (used by pandas path)."""
     conn = sqlite3.connect(db_path)
-    df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    df   = pd.read_sql(f"SELECT * FROM {table_name}", conn)
     conn.close()
     return df
