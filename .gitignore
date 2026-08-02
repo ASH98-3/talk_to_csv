@@ -40,3 +40,4 @@ Thumbs.db
 
 #key 
 notebooks/config.py
+backend/llm.py
