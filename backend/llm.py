@@ -1,8 +1,17 @@
 from groq import Groq
+from dotenv import load_dotenv
+from pathlib import Path
+import os
 
-client = Groq()  # reads GROQ_API_KEY from env
-MODEL = "llama-3.3-70b-versatile"  # fast, free tier, great at SQL
-MAX_TOKENS = 512
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY not found in environment or .env file")
+
+client     = Groq(api_key=GROQ_API_KEY)
+MODEL      = "llama-3.3-70b-versatile"
+MAX_TOKENS = 500
 
 
 def call_llm(prompt: str) -> str:
