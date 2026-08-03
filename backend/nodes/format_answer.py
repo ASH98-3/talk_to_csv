@@ -1,17 +1,20 @@
 import pandas as pd
+import numpy as np
 from backend.llm import call_llm
 
 
 def format_answer(state: dict) -> dict:
-    result   = state["result"]
-    question = state["question"]
-    sql      = state.get("sql", "")
+    result      = state["result"]
+    question    = state["question"]
+    sql         = state.get("sql", "")
     pandas_code = state.get("pandas_code", "")
 
     if result is None:
         return {**state, "answer": "Sorry, I could not answer that question.", "table": None}
 
     if isinstance(result, pd.DataFrame):
+        # replace NaN with None — JSON compliant
+        result  = result.replace({np.nan: None})
         result_str = result.to_string(index=False)
         table      = result.to_dict(orient="records")
     else:
