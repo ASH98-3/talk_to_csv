@@ -15,11 +15,21 @@ def understand_query(state: dict) -> dict:
         '  "path": "sql" or "pandas",\n'
         '  "rewritten_query": "cleaner version of the question for database querying",\n'
         '  "columns_needed": ["col1", "col2"],\n'
-        '  "reasoning": "one line explanation of your decision"\n'
+        '  "reasoning": "one line explanation of your decision",\n'
+        '  "chart_type": "bar" or "line" or "pie" or "histogram" or "scatter" or null,\n'
+        '  "chart_x": "column name for x axis" or null,\n'
+        '  "chart_y": "column name for y axis" or null\n'
         "}\n\n"
         "Rules for path decision:\n"
         "- sql: aggregations, filters, groupby, counts, joins, top N, comparisons\n"
         "- pandas: correlation, distribution, missing values, shape, dtypes, describe, statistical analysis\n\n"
+        "Rules for chart decision:\n"
+        "- bar: comparisons across categories (salary by job title, count by country)\n"
+        "- line: trends over time (postings by month)\n"
+        "- pie: proportions (% remote vs non-remote, share by category)\n"
+        "- histogram: distribution of a single numeric column\n"
+        "- scatter: correlation between two numeric columns\n"
+        "- null: if question is about a single value, missing values, shape, or not visual\n\n"
         "Return ONLY the JSON, no markdown, no explanation."
     )
 
@@ -33,13 +43,18 @@ def understand_query(state: dict) -> dict:
             "rewritten_query": parsed.get("rewritten_query", question),
             "columns_needed":  parsed.get("columns_needed", []),
             "reasoning":       parsed.get("reasoning", ""),
+            "chart_type":      parsed.get("chart_type", None),
+            "chart_x":         parsed.get("chart_x", None),
+            "chart_y":         parsed.get("chart_y", None),
         }
     except json.JSONDecodeError:
-        # fallback safely if LLM returns malformed JSON
         return {
             **state,
             "path":            "sql",
             "rewritten_query": question,
             "columns_needed":  [],
             "reasoning":       "fallback due to parse error",
+            "chart_type":      None,
+            "chart_x":         None,
+            "chart_y":         None,
         }
