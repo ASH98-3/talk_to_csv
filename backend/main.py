@@ -1,7 +1,6 @@
 import os
 import uuid
 import math
-import json
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -13,7 +12,7 @@ from backend.ingestion    import load_file, get_schema, get_column_documents, ge
 from backend.schema_store import build_schema_store, get_relevant_schema
 from backend.graph        import agent
 
-load_dotenv(r"C:\Users\Ashish\Desktop\talktocsv\.env")
+load_dotenv()
 
 app      = FastAPI(title="TalkToCSV")
 DATA_DIR = Path("backend/data")
@@ -28,7 +27,7 @@ class AskRequest(BaseModel):
 
 
 def safe_json(obj):
-    """Recursively replace NaN/Inf with None so FastAPI can serialize."""
+    """Recursively replace NaN/Inf with None so response serializes cleanly."""
     if isinstance(obj, list):
         return [safe_json(i) for i in obj]
     elif isinstance(obj, dict):
@@ -106,6 +105,9 @@ def ask(req: AskRequest):
         "rewritten_query": "",
         "columns_needed":  [],
         "reasoning":       "",
+        "chart_type":      None,
+        "chart_x":         None,
+        "chart_y":         None,
         "sql":             None,
         "pandas_code":     None,
         "result":          None,
@@ -121,4 +123,7 @@ def ask(req: AskRequest):
         "pandas_code": result.get("pandas_code"),
         "table":       result.get("table"),
         "reasoning":   result.get("reasoning"),
+        "chart_type":  result.get("chart_type"),
+        "chart_x":     result.get("chart_x"),
+        "chart_y":     result.get("chart_y"),
     }))

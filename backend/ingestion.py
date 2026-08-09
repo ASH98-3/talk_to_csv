@@ -19,27 +19,26 @@ def load_file(file_path: str, db_path: str, table_name: str = "data") -> str:
 
 
 def get_schema(db_path: str, table_name: str) -> str:
-    """
-    Plain-text schema for LLM prompt.
-    Fetches 50 rows so sparse columns (like salary) still get sample values.
-    """
-    conn    = sqlite3.connect(db_path)
-    cols    = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
-    samples = conn.execute(f"SELECT * FROM {table_name} LIMIT 50").fetchall()
+    conn = sqlite3.connect(db_path)
+    cols = conn.execute(f"PRAGMA table_info({table_name})").fetchall()
     conn.close()
 
     col_lines = []
-    for i, c in enumerate(cols):
-        col_name  = c[1]
-        col_type  = c[2]
-        vals      = [str(row[i]) for row in samples if row[i] is not None][:3]
+    for c in cols:
+        col_name = c[1]
+        col_type = c[2]
+        # fetch non-null samples specifically for each column
+        conn    = sqlite3.connect(db_path)
+        samples = conn.execute(
+            f"SELECT {col_name} FROM {table_name} "
+            f"WHERE {col_name} IS NOT NULL LIMIT 3"
+        ).fetchall()
+        conn.close()
+        vals       = [str(row[0]) for row in samples]
         sample_str = ", ".join(vals) if vals else "no samples"
         col_lines.append(f"  - {col_name} ({col_type}) e.g. {sample_str}")
 
-    return (
-        f"Table: {table_name}\n"
-        f"Columns:\n" + "\n".join(col_lines)
-    )
+    return f"Table: {table_name}\nColumns:\n" + "\n".join(col_lines)
 
 
 def get_column_documents(db_path: str, table_name: str) -> list:
