@@ -27,20 +27,25 @@ for key, default in {
 
 # --- Chart renderer — defined first so it's available everywhere ---
 def render_chart(chart_type, table, chart_x, chart_y):
-    if not table or not chart_x:
+    if not table:
         return
     df = pd.DataFrame(table)
-    if chart_x not in df.columns:
-        return
+    
+    # auto-detect columns if chart_x/chart_y don't match actual columns
+    cols = df.columns.tolist()
+    if chart_x not in df.columns and len(cols) >= 2:
+        chart_x = cols[0]  # first column is always category
+        chart_y = cols[1]  # second column is always value
+    
     try:
         if chart_type == "bar":
             fig = px.bar(df, x=chart_x, y=chart_y, title=f"{chart_y} by {chart_x}")
             st.plotly_chart(fig, use_container_width=True)
-        elif chart_type == "line":
-            fig = px.line(df, x=chart_x, y=chart_y, title=f"{chart_y} over {chart_x}")
-            st.plotly_chart(fig, use_container_width=True)
         elif chart_type == "pie":
             fig = px.pie(df, names=chart_x, values=chart_y, title=f"{chart_y} by {chart_x}")
+            st.plotly_chart(fig, use_container_width=True)
+        elif chart_type == "line":
+            fig = px.line(df, x=chart_x, y=chart_y, title=f"{chart_y} over {chart_x}")
             st.plotly_chart(fig, use_container_width=True)
         elif chart_type == "histogram":
             fig = px.histogram(df, x=chart_x, title=f"Distribution of {chart_x}")
@@ -50,7 +55,6 @@ def render_chart(chart_type, table, chart_x, chart_y):
             st.plotly_chart(fig, use_container_width=True)
     except Exception:
         pass
-
 
 # --- Sidebar ---
 with st.sidebar:
