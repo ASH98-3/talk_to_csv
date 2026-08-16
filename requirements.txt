@@ -20,3 +20,5 @@ requests
 # Notebooks
 jupyter
 nbformat
+
+tokenizers==0.19.1
