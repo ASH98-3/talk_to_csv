@@ -7,9 +7,12 @@ groq
 langgraph
 langchain-groq
 chromadb
+fastembed
 python-multipart
 python-dotenv
-chromadb
+plotly
+numpy==1.26.4
+
 # Frontend
 streamlit
 requests
