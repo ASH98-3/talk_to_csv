@@ -1,4 +1,3 @@
-# Backend
 fastapi
 uvicorn
 pandas
@@ -6,19 +5,12 @@ openpyxl
 groq
 langgraph
 langchain-groq
-chromadb
-fastembed
+chromadb==0.4.24
 python-multipart
 python-dotenv
 plotly
 numpy==1.26.4
-
-# Frontend
 streamlit
 requests
-
-# Notebooks
 jupyter
 nbformat
-
-tokenizers==0.19.1
