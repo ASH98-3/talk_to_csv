@@ -10,7 +10,7 @@ if not GROQ_API_KEY:
     raise ValueError("GROQ_API_KEY not found in environment or .env file")
 
 client     = Groq(api_key=GROQ_API_KEY)
-MODEL      = "llama-3.3-70b-versatile"
+MODEL = "llama3-70b-8192"
 MAX_TOKENS = 500
 
 
