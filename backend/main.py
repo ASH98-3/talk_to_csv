@@ -11,10 +11,18 @@ from pydantic import BaseModel
 from backend.ingestion    import load_file, get_schema, get_column_documents, get_dataframe
 from backend.schema_store import build_schema_store, get_relevant_schema
 from backend.graph        import agent
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app      = FastAPI(title="TalkToCSV")
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # tighten this to your Vercel URL after deployment
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 DATA_DIR = Path("backend/data")
 DATA_DIR.mkdir(exist_ok=True)
 
